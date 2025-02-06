@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movie Carnival - Groups</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.png" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://kit.fontawesome.com/a8162db7fd.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="./js/config.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <style>
+        body {
+            background-color: #2A3639;
+            min-height: 100vh;
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: white;
+        }
+
+        .navbar {
+            background-color: #212529 !important;
+            padding: 0.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #search-bar {
+            flex: 1;
+            max-width: 800px;
+            margin-left: 2rem;
+        }
+
+        #search-bar form {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            background-color: #4a5459;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            color: white;
+            font-size: 1rem;
+            height: 40px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .search-button {
+            background-color: #FFD700;
+            border: none;
+            height: 40px;
+            width: 50px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .group-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .group-title {
+            color: #FFD700;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .user-search-container {
+            background: #212529;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .current-group {
+            background: #212529;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4a5459;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .user-email {
+            margin: 0;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #FFD700;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .action-btn:hover {
+            color: #fae052;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            padding: 2rem;
+        }
+
+        #searchResults {
+            margin-top: 1rem;
+        }
+        .site-name {
+            color: #FFD700;
+            margin-left: 8px;
+            font-size: 1.25rem;
+            line-height: 45px;
+            vertical-align: middle;
+        }
+
+    </style>
+    <body>
+        
+    <!-- Navbar (same as index.html) -->
+    <nav class="navbar bg-dark px-2 sticky-top">
+        <div class="container-fluid justify-content-start">
+          <a class="navbar-brand" href="index.html">
+            <img
+              src="images/logo.png"
+              alt=""
+              width="45"
+              height="45"
+              class="d-inline-block align-text-top"
+            />
+            <span class="pt-4 site-name animate__animated animate__rubberBand">
+              Movie Carnival
+            </span>
+          </a>
+        </div>
+      </nav>
+  
+    
+        <div class="group-container">
+            <h1 class="group-title">Friend Management</h1>
+    
+            <!-- User Search Section -->
+            <div class="user-search-container">
+                <h2 class="section-title">Add Friends</h2>
+                <div class="search-form">
+                    <div class="d-flex">
+                        <input type="search" 
+                               class="search-input" 
+                               placeholder="Search users by email" 
+                               id="userSearch">
+                        <button class="search-button" id="searchButton">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                    <div id="searchResults">
+                        <!-- Search results will be populated here -->
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Current Friends Section -->
+            <div class="current-group">
+                <h2 class="section-title">Current Friends</h2>
+                <div id="groupMembers">
+                    <!-- Friends will be populated here -->
+                </div>
+            </div>
+        </div>
+    
+        <script>
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+
+            function clearSearch() {
+            // Clear search input
+            document.getElementById('userSearch').value = '';
+            // Clear search results
+            document.getElementById('searchResults').innerHTML = '';
+        }
+
+        async function searchUsers() {
+            const searchTerm = document.getElementById('userSearch').value.trim().toLowerCase();
+            const searchResults = document.getElementById('searchResults');
+            
+            // Clear previous results
+            searchResults.innerHTML = '';
+
+            if (searchTerm.length < 3) {
+                searchResults.innerHTML = `
+                    <div class="empty-state">
+                        Please enter at least 3 characters to search
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // Query users collection by email
+                const usersRef = db.collection('users');
+                const snapshot = await usersRef
+                    .where('email', '>=', searchTerm)
+                    .where('email', '<=', searchTerm + '\uf8ff')
+                    .get();
+
+                if (snapshot.empty) {
+                    searchResults.innerHTML = `
+                        <div class="empty-state">
+                            No users found matching "${searchTerm}"
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Display found users
+                snapshot.forEach(doc => {
+                    const userData = doc.data();
+                    if (doc.id !== auth.currentUser.uid) { // Don't show current user
+                        const userElement = document.createElement('div');
+                        userElement.className = 'user-item animate__animated animate__fadeIn';
+                        userElement.innerHTML = `
+                            <div class="user-avatar">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <p class="user-email">${userData.email}</p>
+                            </div>
+                            <button class="action-btn" onclick="addFriend('${doc.id}')">
+                                <i class="fa-solid fa-user-plus"></i>
+                            </button>
+                        `;
+                        searchResults.appendChild(userElement);
+                    }
+                });
+            } catch (error) {
+                console.error("Error searching users:", error);
+                searchResults.innerHTML = `
+                    <div class="empty-state">
+                        Error searching users. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        async function addFriend(friendId) {
+            try {
+                const currentUserId = auth.currentUser.uid;
+                const userRef = db.collection('users').doc(currentUserId);
+                
+                // Get current user's document
+                const userDoc = await userRef.get();
+                const userData = userDoc.data();
+                
+                // Check if friends array exists and update it
+                const friends = userData.friends || [];
+                if (!friends.includes(friendId)) {
+                    await userRef.update({
+                        friends: [...friends, friendId]
+                    });
+                    
+                    // Clear search input and results after successful addition
+                    clearSearch();
+                    
+                    // Refresh friends list
+                    loadFriends();
+                }
+            } catch (error) {
+                console.error("Error adding friend:", error);
+                alert("Failed to add friend. Please try again.");
+            }
+        }
+
+        async function removeFriend(friendId) {
+            try {
+                const currentUserId = auth.currentUser.uid;
+                const userRef = db.collection('users').doc(currentUserId);
+                
+                // Get current user's document
+                const userDoc = await userRef.get();
+                const userData = userDoc.data();
+                
+                // Remove friend from array
+                const friends = userData.friends || [];
+                await userRef.update({
+                    friends: friends.filter(id => id !== friendId)
+                });
+                
+                loadFriends(); // Refresh the friends list
+            } catch (error) {
+                console.error("Error removing friend:", error);
+                alert("Failed to remove friend. Please try again.");
+            }
+        }
+
+        async function loadFriends() {
+            const groupMembers = document.getElementById('groupMembers');
+            groupMembers.innerHTML = '';
+
+            try {
+                const currentUserId = auth.currentUser.uid;
+                const userDoc = await db.collection('users').doc(currentUserId).get();
+                const userData = userDoc.data();
+                
+                if (!userData.friends || userData.friends.length === 0) {
+                    groupMembers.innerHTML = `
+                        <div class="empty-state">
+                            No friends added yet. Use the search above to add friends.
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Fetch and display each friend's data
+                for (const friendId of userData.friends) {
+                    const friendDoc = await db.collection('users').doc(friendId).get();
+                    const friendData = friendDoc.data();
+                    
+                    const memberElement = document.createElement('div');
+                    memberElement.className = 'user-item animate__animated animate__fadeIn';
+                    memberElement.innerHTML = `
+                        <div class="user-avatar">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="user-info">
+                            <p class="user-email">${friendData.email}</p>
+                        </div>
+                        <button class="action-btn" onclick="removeFriend('${friendId}')">
+                            <i class="fa-solid fa-user-minus"></i>
+                        </button>
+                    `;
+                    groupMembers.appendChild(memberElement);
+                }
+            } catch (error) {
+                console.error("Error loading friends:", error);
+                groupMembers.innerHTML = `
+                    <div class="empty-state">
+                        Error loading friends. Please refresh the page.
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize page and auth state listener
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    loadFriends();
+                    
+                    // Add search button click listener
+                    document.getElementById('searchButton').addEventListener('click', searchUsers);
+                    
+                    // Add enter key listener to search input
+                    document.getElementById('userSearch').addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            searchUsers();
+                        }
+                    });
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+        </script>
+      </body>
+  </head>
+
+</html>
